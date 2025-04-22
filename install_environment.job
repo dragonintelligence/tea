@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_mig
+#SBATCH --gpus=1
+#SBATCH --job-name=InstallEnvironment
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --time=00:30:00
+#SBATCH --output=slurm_output_%A.out
+
+module purge
+module load 2024
+module load Anaconda3/2024.06-1
+
+# Create the conda environment
+conda create --name tea --yes
+
+# Activate the newly created environment
+# conda init
+# source activate tea
+conda activate tea
+
+# Install packages from requirements.txt
+pip install -r requirements.txt
+#pip install git+https://github.com/RobustBench/robustbench.git
+#pip install timm
+# pip list
