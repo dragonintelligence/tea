@@ -19,3 +19,5 @@ experiments/
 output*/
 save*/
 .others/
+*.out
+data/

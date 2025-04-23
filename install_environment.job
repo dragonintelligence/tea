@@ -13,15 +13,16 @@ module load 2024
 module load Anaconda3/2024.06-1
 
 # Create the conda environment
-conda create --name tea --yes
+# conda create --name tea --yes
 
 # Activate the newly created environment
 # conda init
-# source activate tea
-conda activate tea
+source activate tea
+# conda activate tea
 
 # Install packages from requirements.txt
 pip install -r requirements.txt
 #pip install git+https://github.com/RobustBench/robustbench.git
 #pip install timm
 # pip list
+# pip install torchmetrics==1.7.1

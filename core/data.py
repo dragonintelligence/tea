@@ -86,6 +86,7 @@ def load_pacs(data_dir=None, shuffle=False, corruptions=None, transform=None):
     return x_test_tensor, y_test_tensor
 
 def load_data(data, n_examples=None, severity=None, data_dir=None, shuffle=False, corruptions=None):
+        data_dir = os.path.join(".", "data")
         if data == 'cifar10':
             x_test, y_test = load_cifar10(n_examples, data_dir)
         elif data == 'cifar100':
