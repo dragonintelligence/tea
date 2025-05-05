@@ -7,9 +7,20 @@ from .resnet import  ResNet, Bottleneck, BasicBlock
 def build_model_res50gn(group_norm, num_classes):
     print('Building model...')
     def gn_helper(planes):
-        return nn.GroupNorm(group_norm, planes)
+        return nn.BatchNorm2d(planes)
+        # return nn.GroupNorm(group_norm, planes)
     net = ResNet(block=Bottleneck, num_blocks=[3, 4, 6, 3], num_classes=num_classes, norm_layer=gn_helper)
     return net
+
+def convert_batchnorm_to_groupnorm(model, num_groups=32):
+    for name, module in model.named_children():
+        if isinstance(module, nn.BatchNorm2d):
+            num_channels = module.num_features
+            gn = nn.GroupNorm(num_groups=min(num_groups, num_channels), num_channels=num_channels)
+            setattr(model, name, gn)
+        else:
+            convert_batchnorm_to_groupnorm(module, num_groups)
+    return model
 
 def build_model_res18bn(num_classes):
     print('Building model...')

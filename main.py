@@ -4,13 +4,13 @@ import logging
 import torch
 from robustbench.model_zoo.enums import ThreatModel
 from robustbench.utils import load_model
-
+import timm
 
 from core.eval import evaluate_ori, evaluate_ood
 from core.calibration import calibration_ori
 from core.config import cfg, load_cfg_fom_args
 from core.utils import set_seed, set_logger
-from core.model import build_model_wrn2810bn, build_model_res18bn, build_model_res50gn
+from core.model import build_model_wrn2810bn, build_model_res18bn, build_model_res50gn, convert_batchnorm_to_groupnorm
 from core.setada import *
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ def main():
     load_cfg_fom_args()
     set_seed(cfg)
     set_logger(cfg)
-    device = torch.device('cuda:0')
+    device = device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') #torch.device('cuda:0')
 
     # configure base model
     if 'BN' in cfg.MODEL.ARCH:
@@ -38,10 +38,12 @@ def main():
         else:
             raise NotImplementedError
     elif 'GN' in cfg.MODEL.ARCH:
+        # base_model = timm.create_model("resnet50_cifar10", pretrained=True)
+        # base_model = convert_batchnorm_to_groupnorm(base_model, num_groups=32)
         group_num=int(cfg.MODEL.ARCH.split("_")[-1])
         base_model = build_model_res50gn(group_num, cfg.CORRUPTION.NUM_CLASSES).to(device)
-        ckpt = torch.load(os.path.join(cfg.CKPT_DIR ,'{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
-        base_model.load_state_dict(ckpt['state_dict'])
+        ckpt = torch.load(os.path.join(cfg.CKPT_DIR ,'{}/{}.pt'.format(cfg.CORRUPTION.DATASET, "resnet50")))
+        base_model.load_state_dict(ckpt, strict=False)
     else:
         raise NotImplementedError
 
