@@ -1,0 +1,12 @@
+name: tea
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - numpy<2.0
+  - pip
+  - pip:
+      - -r requirements.txt
+      - git+https://github.com/RobustBench/robustbench.git
+      - timm

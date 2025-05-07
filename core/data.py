@@ -10,8 +10,8 @@ from robustbench.data import load_cifar10, load_cifar100
 def set_transform(dataset):
     if dataset.lower() == 'cifar10' or dataset.lower() == 'cifar100':
         transform_train = T.Compose([ 
-            T.Resize(32), 
-            T.RandomCrop(32, padding=4), 
+            T.Resize(32),
+            T.RandomCrop(32, padding=4),
             T.RandomHorizontalFlip(),
             T.ToTensor()
             ])
@@ -25,12 +25,12 @@ def set_transform(dataset):
         transform_test = T.Compose([T.Resize(28), T.RandomRotation(degrees=(90,91)), T.ToTensor()])
     elif  'tin200' in dataset.lower():
         transform_train = transforms.Compose([
-            T.Resize(32), 
-            T.RandomCrop(32, padding=4), 
+            T.Resize(64),
+            T.RandomCrop(64, padding=4),
             T.RandomHorizontalFlip(),
             T.ToTensor(),
         ])
-        transform_test = T.Compose([T.Resize(32), T.ToTensor()])
+        transform_test = T.Compose([T.Resize(64), T.ToTensor()])
     elif  'pacs' in dataset.lower():
         transform_train = transforms.Compose([
             T.Resize(32), 
@@ -86,7 +86,6 @@ def load_pacs(data_dir=None, shuffle=False, corruptions=None, transform=None):
     return x_test_tensor, y_test_tensor
 
 def load_data(data, n_examples=None, severity=None, data_dir=None, shuffle=False, corruptions=None):
-        data_dir = os.path.join(".", "data")
         if data == 'cifar10':
             x_test, y_test = load_cifar10(n_examples, data_dir)
         elif data == 'cifar100':

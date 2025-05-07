@@ -1,28 +1,22 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_mig
+#SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
-#SBATCH --job-name=InstallEnvironment
+#SBATCH --job-name=InstallTEA
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --time=00:30:00
+#SBATCH --cpus-per-task=4
+#SBATCH --time=00:15:00
 #SBATCH --output=slurm_output_%A.out
 
 module purge
 module load 2024
 module load Anaconda3/2024.06-1
 
-# Create the conda environment
-conda create --name tea --yes
+cd $HOME/tea-main/
 
-# Activate the newly created environment
-# conda init
-source activate tea
-# conda activate tea
+# Optional: remove any old env first
+conda env remove --name tea --yes || true
 
-# Install packages from requirements.txt
-pip install -r requirements.txt
-#pip install git+https://github.com/RobustBench/robustbench.git
-#pip install timm
-# pip list
-# pip install torchmetrics==1.7.1
+# Create the env from the .yml
+conda env create -f tea_env.yml
+

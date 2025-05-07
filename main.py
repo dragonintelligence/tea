@@ -4,13 +4,13 @@ import logging
 import torch
 from robustbench.model_zoo.enums import ThreatModel
 from robustbench.utils import load_model
-import timm
+
 
 from core.eval import evaluate_ori, evaluate_ood
 from core.calibration import calibration_ori
 from core.config import cfg, load_cfg_fom_args
 from core.utils import set_seed, set_logger
-from core.model import build_model_wrn2810bn, build_model_res18bn, build_model_res50gn, convert_batchnorm_to_groupnorm
+from core.model import build_model_wrn2810bn, build_model_res18bn, build_model_res50gn
 from core.setada import *
 
 logger = logging.getLogger(__name__)
@@ -19,31 +19,57 @@ def main():
     load_cfg_fom_args()
     set_seed(cfg)
     set_logger(cfg)
-    device = device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') #torch.device('cuda:0')
+    device = torch.device('cuda:0')
+    print("Loaded IMG_SIZE:", cfg.CORRUPTION.IMG_SIZE)
 
     # configure base model
-    if 'BN' in cfg.MODEL.ARCH:
+    if 'BN' in cfg.MODEL.ARCH or 'TIN' in cfg.MODEL.ARCH:
         if cfg.CORRUPTION.DATASET == 'cifar10' and cfg.MODEL.ARCH == 'WRN2810_BN':
             # use robustbench
             model = 'Standard'
             base_model = load_model(model, cfg.CKPT_DIR, cfg.CORRUPTION.DATASET, ThreatModel.corruptions).to(device)
+
+        elif cfg.CORRUPTION.DATASET == 'tin200' and cfg.MODEL.ARCH == 'resnet18_TIN':
+            from core.model.custom_resnet import resnet18
+            import torch.nn as nn
+            from collections import OrderedDict
+
+            base_model = resnet18('tiny').to(device)
+
+            # base_model.linear = nn.Linear(base_model.linear.in_features, cfg.CORRUPTION.NUM_CLASSES)
+
+            ckpt_path = os.path.join(cfg.CKPT_DIR, '{}/{}.pkl'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH))
+            # ckpt_path = "/home/user/ckpt/tin200/resnet18_TIN.ckpt"
+            print("The current path being used is: {}".format(ckpt_path))
+            checkpoint = torch.load(ckpt_path)
+            state_dict = checkpoint['state_dict']
+
+            new_state_dict = OrderedDict()
+            for k, v in state_dict.items():
+                new_key = k.replace('module.', '') if k.startswith('module.') else k
+                new_state_dict[new_key] = v
+
+            base_model.load_state_dict(new_state_dict)
+
         elif cfg.CORRUPTION.DATASET == 'cifar100' or cfg.CORRUPTION.DATASET == 'tin200':
-            base_model = build_model_wrn2810bn(cfg.CORRUPTION.NUM_CLASSES).to(device)
-            ckpt = torch.load(os.path.join(cfg.CKPT_DIR ,'{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
+            base_model = build_model_wrn2810bn(cfg.CORRUPTION.NUM_CLASSES)
+            if base_model is None:
+                raise RuntimeError("build_model_wrn2810bn returned None — check model registration.")
+            base_model = base_model.to(device)
+            ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
             base_model.load_state_dict(ckpt['state_dict'])
-        elif cfg.CORRUPTION.DATASET == 'pacs' or cfg.CORRUPTION.DATASET == 'mnist' :
+
+        elif cfg.CORRUPTION.DATASET == 'pacs' or cfg.CORRUPTION.DATASET == 'mnist':
             base_model = build_model_res18bn(cfg.CORRUPTION.NUM_CLASSES).to(device)
-            ckpt = torch.load(os.path.join(cfg.CKPT_DIR ,'{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
+            ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
             base_model.load_state_dict(ckpt['state_dict'])
         else:
             raise NotImplementedError
     elif 'GN' in cfg.MODEL.ARCH:
-        # base_model = timm.create_model("resnet50_cifar10", pretrained=True)
-        # base_model = convert_batchnorm_to_groupnorm(base_model, num_groups=32)
         group_num=int(cfg.MODEL.ARCH.split("_")[-1])
         base_model = build_model_res50gn(group_num, cfg.CORRUPTION.NUM_CLASSES).to(device)
-        ckpt = torch.load(os.path.join(cfg.CKPT_DIR ,'{}/{}.pt'.format(cfg.CORRUPTION.DATASET, "resnet50")))
-        base_model.load_state_dict(ckpt, strict=False)
+        ckpt = torch.load(os.path.join(cfg.CKPT_DIR ,'{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
+        base_model.load_state_dict(ckpt['state_dict'])
     else:
         raise NotImplementedError
 

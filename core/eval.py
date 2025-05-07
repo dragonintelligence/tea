@@ -127,7 +127,7 @@ def evaluate_ori(model, cfg, logger, device):
             x_test, y_test = x_test.to(device), y_test.to(device)
             out = clean_accuracy(model, x_test, y_test, cfg.OPTIM.BATCH_SIZE, logger=logger, ada=cfg.MODEL.ADAPTATION, if_adapt=True, if_vis=False)
             if cfg.MODEL.ADAPTATION == 'energy':
-                acc = out # energes is unused and throws an error
+                acc, energes = out
             else:
                 acc = out
             logger.info("Test set Accuracy: {}".format(acc))

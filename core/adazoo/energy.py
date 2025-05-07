@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from torchvision.utils import save_image
 from core.param import load_model_and_optimizer, copy_model_and_optimizer
 
-def init_random(bs, im_sz=32, n_ch=3):
+def init_random(bs, *, im_sz, n_ch):
     return torch.FloatTensor(bs, n_ch, im_sz, im_sz).uniform_(-1, 1)
 
 
@@ -30,16 +30,24 @@ class EnergyModel(nn.Module):
         
 
 def sample_p_0(reinit_freq, replay_buffer, bs, im_sz, n_ch, device, y=None):
+    random_samples = init_random(bs, im_sz=im_sz, n_ch=n_ch)
+
     if len(replay_buffer) == 0:
-        return init_random(bs, im_sz=im_sz, n_ch=n_ch), []
+        return random_samples.to(device), []
     buffer_size = len(replay_buffer)
     inds = torch.randint(0, buffer_size, (bs,))
     # if cond, convert inds to class conditional inds
 
     buffer_samples = replay_buffer[inds]
-    random_samples = init_random(bs, im_sz=im_sz, n_ch=n_ch)
+
+    if buffer_samples.shape != random_samples.shape:
+        print(
+            f"[WARNING] Buffer shape {buffer_samples.shape} doesn't match random shape {random_samples.shape}. Discarding buffer.")
+        return random_samples.to(device), inds
+
     choose_random = (torch.rand(bs) < reinit_freq).float()[:, None, None, None]
     samples = choose_random * random_samples + (1 - choose_random) * buffer_samples
+
     return samples.to(device), inds
 
 
@@ -48,6 +56,7 @@ def sample_q(f, replay_buffer, n_steps, sgld_lr, sgld_std, reinit_freq, batch_si
     scratch (i.e. replay_buffer==[]).  See test_wrn_ebm.py for example.
     """
     f.eval()
+
     # get batch size
     bs = batch_size if y is None else y.size(0)
     # generate initial samples and buffer inds of those samples (if buffer is used)
@@ -60,6 +69,11 @@ def sample_q(f, replay_buffer, n_steps, sgld_lr, sgld_std, reinit_freq, batch_si
         x_k.data += sgld_lr * f_prime + sgld_std * torch.randn_like(x_k)
     f.train()
     final_samples = x_k.detach()
+    if final_samples.shape[1:] != replay_buffer.shape[1:]:
+        raise RuntimeError(f"Shape mismatch: sample {final_samples.shape} vs buffer {replay_buffer.shape}")
+    assert final_samples.shape[1:] == replay_buffer.shape[1:], \
+        f"Replay buffer shape {replay_buffer.shape[1:]} doesn't match generated sample shape {final_samples.shape[1:]}"
+
     # update replay buffer
     if len(replay_buffer) > 0:
         replay_buffer[buffer_inds] = final_samples.cpu()
@@ -72,11 +86,14 @@ class Energy(nn.Module):
     """
     def __init__(self, model, optimizer, steps=1, episodic=False, 
                  buffer_size=10000, sgld_steps=20, sgld_lr=1, sgld_std=0.01, reinit_freq=0.05, if_cond=False, 
-                 n_classes=10, im_sz=32, n_ch=3, path=None, logger=None): 
+                 n_classes=10, im_sz=64, n_ch=3, path=None, logger=None):
         super().__init__()
 
+        self.im_sz = im_sz
+        self.n_ch = n_ch
         self.energy_model=EnergyModel(model)
-        self.replay_buffer = init_random(buffer_size, im_sz=im_sz, n_ch=n_ch)
+        self.replay_buffer = init_random(buffer_size, im_sz=self.im_sz, n_ch=self.n_ch)
+
         self.replay_buffer_old = deepcopy(self.replay_buffer)
         self.optimizer = optimizer
         self.steps = steps
@@ -90,9 +107,6 @@ class Energy(nn.Module):
         self.if_cond = if_cond
         
         self.n_classes = n_classes
-        self.im_sz = im_sz
-        self.n_ch = n_ch
-        
         self.path=path
         self.logger = logger
 
