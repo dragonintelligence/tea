@@ -32,8 +32,4 @@ CORRUPTION:
     - pixelate
     - jpeg_compression
 OPTIM:
-<<<<<<< HEAD
   BATCH_SIZE: 200
-=======
-  BATCH_SIZE: 200
->>>>>>> origin/main
