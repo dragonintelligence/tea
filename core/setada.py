@@ -22,7 +22,7 @@ def setup_source(model, cfg, logger):
             m.track_running_stats = True
             m.training = False
     logger.info(f"model for evaluation: %s", model)
-    return model
+    return model
 
 def setup_norm(model, cfg, logger):
     """Set up test-time normalization adaptation.
