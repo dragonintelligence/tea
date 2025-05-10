@@ -16,8 +16,13 @@ import core.adazoo.pl as pl
 def setup_source(model, cfg, logger):
     """Set up the baseline source model without adaptation."""
     model.eval()
+    # Ensure all BN layers use running stats and are in eval mode
+    for m in model.modules():
+        if isinstance(m, nn.BatchNorm2d):
+            m.track_running_stats = True
+            m.training = False
     logger.info(f"model for evaluation: %s", model)
-    return model
+    return model
 
 def setup_norm(model, cfg, logger):
     """Set up test-time normalization adaptation.
