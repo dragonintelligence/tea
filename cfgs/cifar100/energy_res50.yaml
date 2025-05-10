@@ -1,4 +1,4 @@
-SAVE_DIR: ./save/cifar10/resnte50
+SAVE_DIR: ./save/cifar100/resnte50
 MODEL:
   ADAPTATION: energy
   ARCH: RESNET50_GN_64

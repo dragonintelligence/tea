@@ -56,7 +56,7 @@ def main():
             if base_model is None:
                 raise RuntimeError("build_model_wrn2810bn returned None — check model registration.")
             base_model = base_model.to(device)
-            ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
+            ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pkl'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
             base_model.load_state_dict(ckpt['state_dict'])
 
         elif cfg.CORRUPTION.DATASET == 'pacs' or cfg.CORRUPTION.DATASET == 'mnist':

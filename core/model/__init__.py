@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from .resnet import  ResNet, Bottleneck, BasicBlock
 from .custom_resnet import ResNet as ResNetTin, BasicBlock as BasicBlockTin
+from .custom_wideresnet import *
 
 def build_model_res50gn(group_norm, num_classes):
     print('Building model...')
@@ -17,7 +18,8 @@ def build_model_res18bn(num_classes):
     return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes, norm_layer=nn.BatchNorm2d)
 
 def build_model_wrn2810bn(num_classes):
-    pass
+    print('Building model...')
+    return WideResNet(num_classes=num_classes) # WRN-28-10 by default
 
 def build_model_resnet18_TIN(num_classes):
     print("Using custom ResNet18 for TinyImageNet")
