@@ -1,4 +1,4 @@
-SAVE_DIR: ./save/cifar10/bn-wrn-28-10
+SAVE_DIR: ./save/cifar100/bn-wrn-28-10
 MODEL:
   ADAPTATION: eata
   ARCH: WRN2810_BN
@@ -7,8 +7,8 @@ MODEL:
 EATA:
   USE_FISHER: False
 CORRUPTION:
-  DATASET: cifar10
-  NUM_CLASSES: 10
+  DATASET: cifar100
+  NUM_CLASSES: 100
   IMG_SIZE: 32
   NUM_CHANNEL: 3
   SEVERITY:

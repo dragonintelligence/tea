@@ -1,16 +1,13 @@
-SAVE_DIR: ./save/cifar100/bn-wrn-28-10
+SAVE_DIR: ./save/cifar10/bn-wrn-28-10
 MODEL:
-  ADAPTATION: shot
-  ARCH: WRN2810_BN
+  ADAPTATION: source
+  ARCH: WRN2810_BN 
   ADA_PARAM:
     - bn
-SHOT:
-  THRESHOLD: 0.9
-  CLF_COEFF: 0.3 
 CORRUPTION:
-  DATASET: cifar100
-  NUM_CLASSES: 100
-  IMG_SIZE: 32
+  DATASET: tin200
+  NUM_CLASSES: 200
+  IMG_SIZE: 64
   NUM_CHANNEL: 3
   SEVERITY:
     - 5
@@ -36,8 +33,3 @@ CORRUPTION:
     - jpeg_compression
 OPTIM:
   BATCH_SIZE: 200
-  METHOD: Adam
-  STEPS: 1
-  BETA: 0.9
-  LR: 0.001
-  WD: 0.
