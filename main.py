@@ -7,7 +7,7 @@ from robustbench.utils import load_model
 
 
 from core.eval import evaluate_ori, evaluate_ood
-from core.calibration import calibration_ori
+from core.calibration import calibration_ori, calibration_ood
 from core.config import cfg, load_cfg_fom_args
 from core.utils import set_seed, set_logger
 from core.model import build_model_wrn2810bn, build_model_res18bn, build_model_res50gn
@@ -103,12 +103,13 @@ def main():
         model = setup_pl(base_model, cfg, logger)
     else:
         raise NotImplementedError
-    
+
     # evaluate on each severity and type of corruption in turn
     evaluate_ood(model, cfg, logger, device)
     evaluate_ori(model, cfg, logger, device)
     # evaluate_adv(base_model, model, cfg, logger, device)
-    # calibration_ori(model, cfg, logger, device)
+    calibration_ood(model, cfg, logger, device)
+    calibration_ori(model, cfg, logger, device)
 
 if __name__ == '__main__':
     main()
