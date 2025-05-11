@@ -28,9 +28,7 @@ def main():
             model = 'Standard'
             base_model = load_model(model, cfg.CKPT_DIR, cfg.CORRUPTION.DATASET, ThreatModel.corruptions).to(device)
         elif cfg.CORRUPTION.DATASET == 'cifar100' or cfg.CORRUPTION.DATASET == 'tin200':
-            base_model = build_model_wrn2810bn(cfg.CORRUPTION.NUM_CLASSES).to(device)
-            ckpt = torch.load(os.path.join(cfg.CKPT_DIR ,'{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
-            base_model.load_state_dict(ckpt['state_dict'])
+            base_model = load_model(model_name='Wang2023Better_WRN-28-10', dataset=cfg.CORRUPTION.DATASET).to(device)
         elif cfg.CORRUPTION.DATASET == 'pacs' or cfg.CORRUPTION.DATASET == 'mnist' :
             base_model = build_model_res18bn(cfg.CORRUPTION.NUM_CLASSES).to(device)
             ckpt = torch.load(os.path.join(cfg.CKPT_DIR ,'{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
