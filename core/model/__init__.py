@@ -2,15 +2,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .resnet import  ResNet, Bottleneck, BasicBlock
-from .wideresnet import WideResNet
+# from .resnet import  ResNet, Bottleneck, BasicBlock
+from .resnet50_new import  ResNet, Bottleneck, BasicBlock, resnet50
 
 def build_model_res50gn(group_norm, num_classes):
     print('Building model...')
     def gn_helper(planes):
         return nn.BatchNorm2d(planes)
         # return nn.GroupNorm(group_norm, planes)
-    net = ResNet(block=Bottleneck, num_blocks=[3, 4, 6, 3], num_classes=num_classes, norm_layer=gn_helper)
+    # net = ResNet(block=Bottleneck, num_blocks=[3, 4, 6, 3], num_classes=num_classes, norm_layer=None) #gn_helper)
+    net = resnet50()
     return net
 
 def convert_batchnorm_to_groupnorm(model, num_groups=32):

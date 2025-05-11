@@ -27,6 +27,8 @@ def main():
             # use robustbench
             model = 'Standard'
             base_model = load_model(model, cfg.CKPT_DIR, cfg.CORRUPTION.DATASET, ThreatModel.corruptions).to(device)
+        elif cfg.CORRUPTION.DATASET == 'cifar100' and cfg.MODEL.ARCH == 'RESNET50_BN':
+            base_model = torch.hub.load("chenyaofo/pytorch-cifar-models", "cifar100_resnet56", pretrained=True).to(device)
         elif cfg.CORRUPTION.DATASET == 'cifar100' or cfg.CORRUPTION.DATASET == 'tin200':
             base_model = load_model(model_name='Wang2023Better_WRN-28-10', dataset=cfg.CORRUPTION.DATASET).to(device)
         elif cfg.CORRUPTION.DATASET == 'pacs' or cfg.CORRUPTION.DATASET == 'mnist' :
@@ -34,7 +36,10 @@ def main():
             ckpt = torch.load(os.path.join(cfg.CKPT_DIR ,'{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
             base_model.load_state_dict(ckpt['state_dict'])
         else:
-            raise NotImplementedError
+            # raise NotImplementedError
+            base_model = build_model_res50gn(0, cfg.CORRUPTION.NUM_CLASSES).to(device)
+            ckpt = torch.load(os.path.join(cfg.CKPT_DIR ,'{}/{}.pt'.format(cfg.CORRUPTION.DATASET, "resnet50")))
+            base_model.load_state_dict(ckpt)
     elif 'GN' in cfg.MODEL.ARCH:
         # base_model = timm.create_model("resnet50_cifar10", pretrained=True)
         # base_model = convert_batchnorm_to_groupnorm(base_model, num_groups=32)
