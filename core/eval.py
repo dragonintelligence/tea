@@ -33,7 +33,7 @@ def clean_accuracy(model, x, y, batch_size = 100, logger=None, device = None, ad
             acc += (output.max(1)[1] == y_curr).float().sum()
             # calculate mce
             pred = torch.softmax(output, dim=1) 
-            mce = calibration_error(pred, y_curr, norm='max', task='multiclass', num_classes=10, n_bins=10)
+            mce = calibration_error(pred, y_curr, norm='max', task='multiclass', num_classes=output.shape[1], n_bins=10)
             mces.append(mce.detach().cpu())
 
     mces = np.array(mces).mean()
