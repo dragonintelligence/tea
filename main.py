@@ -10,7 +10,7 @@ from core.eval import evaluate_ori, evaluate_ood
 from core.calibration import calibration_ori
 from core.config import cfg, load_cfg_fom_args
 from core.utils import set_seed, set_logger
-from core.model import build_model_wrn2810bn, build_model_res18bn, build_model_res50gn, convert_batchnorm_to_groupnorm
+from core.model import build_model_wrn2810bn, build_model_res18bn, build_model_res50gn
 from core.setada import *
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
 SAVE_DIR: ./save/tin200/bn-wrn-28-10
 MODEL:
-  ADAPTATION: eata
+  ADAPTATION: eta
   ARCH: WRN2810_BN
   ADA_PARAM:
     - bn

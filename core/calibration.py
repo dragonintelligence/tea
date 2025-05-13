@@ -8,7 +8,7 @@ import matplotlib.ticker as ticker
 import torch
 from torchmetrics.functional import calibration_error
 from core.setada import *
-from data import load_data
+from .data import load_data
 
 def plot_calibration_hist(model, x, y, batch_size = 100, logger=None, device = None, ada=None, if_adapt=True, if_vis=False, c=None, s=None, myfont=None):
     try:
