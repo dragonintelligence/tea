@@ -39,9 +39,9 @@ CORRUPTION:
     - pixelate
     - jpeg_compression
 OPTIM:
-  BATCH_SIZE: 100
+  BATCH_SIZE: 150
   METHOD: Adam
   STEPS: 1
   BETA: 0.9
-  LR: 0.0005
+  LR: 0.00075
   WD: 0.
