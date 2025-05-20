@@ -33,6 +33,13 @@ _C.MODEL.ADAPTATION = 'energy'
 
 _C.MODEL.ADA_PARAM= ['bn']
 
+# Temperature scaling parameters
+_C.MODEL.TEMPERATURE = 0.3
+_C.MODEL.MIN_TEMPERATURE = 0.05
+_C.MODEL.UNCERTAINTY_THRESHOLD = 0.7
+_C.MODEL.CONTRAST_BOOST = 2.0
+_C.MODEL.NOISE_BOOST = 1.5
+
 # By default tent is online, with updates persisting across batches.
 # To make adaptation episodic, and reset the model for each batch, choose True.
 _C.MODEL.EPISODIC = False

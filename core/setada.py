@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 
@@ -12,6 +11,7 @@ import core.adazoo.eata as eata
 import core.adazoo.sar as sar
 import core.adazoo.shot as shot
 import core.adazoo.pl as pl
+import core.adazoo.uncertainty as uncertainty
 
 def setup_source(model, cfg, logger):
     """Set up the baseline source model without adaptation."""
@@ -144,6 +144,39 @@ def setup_energy(model, cfg, logger):
     logger.info(f"params for adaptation: %s", param_names)
     logger.info(f"optimizer for adaptation: %s", optimizer)
     return energy_model
+    
+def setup_uncertainty(model, cfg, logger):
+    """Set up TEA adaptation with uncertainty.
+    """
+    model = configure_model(model,
+                            ada_param=cfg.MODEL.ADA_PARAM)
+    params, param_names = collect_params(model,
+                                         ada_param=cfg.MODEL.ADA_PARAM,
+                                         logger=logger)
+    optimizer = setup_optimizer(params, cfg, logger)
+    uncertainty_model = uncertainty.Uncertainty(model, optimizer,
+                           steps=cfg.OPTIM.STEPS,
+                           episodic=cfg.MODEL.EPISODIC,
+                           buffer_size=cfg.EBM.BUFFER_SIZE,
+                           sgld_steps=cfg.EBM.STEPS,
+                           sgld_lr=cfg.EBM.SGLD_LR,
+                           sgld_std=cfg.EBM.SGLD_STD,
+                           reinit_freq=cfg.EBM.REINIT_FREQ,
+                           if_cond=cfg.EBM.UNCOND,
+                           n_classes=cfg.CORRUPTION.NUM_CLASSES,
+                           im_sz=cfg.CORRUPTION.IMG_SIZE,
+                           n_ch = cfg.CORRUPTION.NUM_CHANNEL,
+                           path = cfg.SAVE_DIR,
+                           logger = logger,
+                           temperature=cfg.MODEL.TEMPERATURE,
+                           min_temperature=cfg.MODEL.MIN_TEMPERATURE,
+                           uncertainty_threshold=cfg.MODEL.UNCERTAINTY_THRESHOLD,
+                           contrast_boost=cfg.MODEL.CONTRAST_BOOST,
+                           noise_boost=cfg.MODEL.NOISE_BOOST)
+    logger.info(f"model for adaptation: %s", model)
+    logger.info(f"params for adaptation: %s", param_names)
+    logger.info(f"optimizer for adaptation: %s", optimizer)
+    return uncertainty_model
 
 def setup_sar(model, cfg, logger):
     """Set up SAR adaptation.
