@@ -15,11 +15,11 @@ module load Anaconda3/2024.06-1
 # conda env create -f environment.yml
 conda init
 conda activate tea
-# srun python main.py --cfg cfgs/tin200/eata.yaml
+srun python main.py --cfg cfgs/tin200/eata.yaml
 srun python main.py --cfg cfgs/tin200/eta.yaml
-# srun python main.py --cfg cfgs/tin200/norm.yaml
-# srun python main.py --cfg cfgs/tin200/pl.yaml
-# srun python main.py --cfg cfgs/tin200/sar.yaml
-# srun python main.py --cfg cfgs/tin200/shot.yaml
-# srun python main.py --cfg cfgs/tin200/tent.yaml
+srun python main.py --cfg cfgs/tin200/norm.yaml
+srun python main.py --cfg cfgs/tin200/pl.yaml
+srun python main.py --cfg cfgs/tin200/sar.yaml
+srun python main.py --cfg cfgs/tin200/shot.yaml
+srun python main.py --cfg cfgs/tin200/tent.yaml
 
