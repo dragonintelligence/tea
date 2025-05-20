@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --job-name=RunTEA_uncertainty_cifar10
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --time=03:00:00
+#SBATCH --output=uncertainty_cifar10__slurm_output_%A.out
+
+module purge
+module load 2024
+module load Anaconda3/2024.06-1
+
+# Run the script using conda run (avoid activate issues)
+conda run -n tea python -c "import numpy; print('NumPy OK:', numpy.__version__)"
+conda run -n tea python main.py --cfg cfgs/cifar10/uncertainty.yaml

@@ -1,8 +1,0 @@
-torch==2.2.0
-torchvision==0.17.0
-yacs==0.1.8
-iopath==0.1.8
-git+https://github.com/RobustBench/robustbench.git
-timm==1.0.15
-matplotlib==3.9.4
-torchmetrics==1.7.1
