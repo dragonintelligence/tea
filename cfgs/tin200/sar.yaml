@@ -32,6 +32,6 @@ CORRUPTION:
     - pixelate
     - jpeg_compression
 OPTIM:
-  BATCH_SIZE: 1000
+  BATCH_SIZE: 150 # CUDA out of memory error
   STEPS: 1
-  LR: 0.0001
+  LR: 0.000015 # to match batch size
