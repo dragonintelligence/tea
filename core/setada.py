@@ -1,7 +1,7 @@
 
 import torch
 import torch.nn as nn
-
+import os
 from core.data import load_dataloader
 from core.optim import setup_optimizer
 from core.param import configure_model, collect_params
@@ -63,7 +63,8 @@ def setup_eata(model, cfg, logger):
             dataset = "-".join([cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH])
         else:
             dataset = cfg.CORRUPTION.DATASET
-        _, fisher_dataset, _, fisher_loader = load_dataloader(root=cfg.DATA_DIR, dataset=dataset, batch_size=cfg.OPTIM.BATCH_SIZE, if_shuffle=False, logger=logger)
+        data_dir = os.path.join(".", "data")
+        _, fisher_dataset, _, fisher_loader = load_dataloader(root=data_dir, dataset=dataset, batch_size=cfg.OPTIM.BATCH_SIZE, if_shuffle=False, logger=logger)
         # fisher_dataset.set_dataset_size(cfg.EATA.FISHER_SIZE)
         model = configure_model(model, ada_param=cfg.MODEL.ADA_PARAM)
         params, param_names = collect_params(model, 

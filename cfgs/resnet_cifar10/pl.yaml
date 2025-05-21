@@ -1,19 +1,15 @@
-SAVE_DIR: ./save/cifar100/resnte50
+SAVE_DIR: ./save/cifar10/bn-wrn-28-10
 MODEL:
-  ADAPTATION: source
+  ADAPTATION: pl
   ARCH: RESNET50_BN
   ADA_PARAM:
     - bn
-EBM:
-  UNCOND: uncond
-  STEPS: 20
-  SGLD_LR: 0.1
-  SGLD_STD: 0.01
-  BUFFER_SIZE: 10000
-  REINIT_FREQ:  0.05
+PL:
+  THRESHOLD: 0.9
+  ALPHA: 0.1
 CORRUPTION:
-  DATASET: cifar100
-  NUM_CLASSES: 100
+  DATASET: cifar10
+  NUM_CLASSES: 10
   IMG_SIZE: 32
   NUM_CHANNEL: 3
   SEVERITY:
@@ -40,8 +36,8 @@ CORRUPTION:
     - jpeg_compression
 OPTIM:
   BATCH_SIZE: 200
-  METHOD: Adam
+  METHOD: SGD
   STEPS: 1
   BETA: 0.9
-  LR: 0.001
+  LR: 0.0001
   WD: 0.

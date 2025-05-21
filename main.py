@@ -87,7 +87,7 @@ def main():
     evaluate_ood(model, cfg, logger, device)
     evaluate_ori(model, cfg, logger, device)
     # evaluate_adv(base_model, model, cfg, logger, device)
-    # calibration_ori(model, cfg, logger, device)
+    calibration_ori(model, cfg, logger, device)
 
 if __name__ == '__main__':
     main()
