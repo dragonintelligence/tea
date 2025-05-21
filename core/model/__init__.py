@@ -29,4 +29,4 @@ def build_model_res18bn(num_classes):
     return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes, norm_layer=nn.BatchNorm2d)
 
 def build_model_wrn2810bn(num_classes):
-    pass
+    return WideResNet(depth=28, widen_factor=10, num_classes=num_classes)
