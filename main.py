@@ -27,7 +27,8 @@ def main():
             # use robustbench
             model = 'Standard'
             base_model = load_model(model, cfg.CKPT_DIR, cfg.CORRUPTION.DATASET, ThreatModel.corruptions).to(device)
-
+        elif cfg.CORRUPTION.DATASET == 'cifar100' and cfg.MODEL.ARCH == 'WRN2810_BN':
+            base_model = load_model(model_name='Wang2023Better_WRN-28-10', dataset=cfg.CORRUPTION.DATASET).to(device)
         elif cfg.CORRUPTION.DATASET == 'tin200' and cfg.MODEL.ARCH == 'resnet18_TIN':
             from core.model.custom_resnet import resnet18
             import torch.nn as nn
