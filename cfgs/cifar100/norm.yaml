@@ -1,4 +1,4 @@
-SAVE_DIR: ./save/cifar100/bn-wrn-28-10
+SAVE_DIR: ./save/cifar100/bn-wrn-28-100
 MODEL:
   ADAPTATION: norm
   ARCH: WRN2810_BN
