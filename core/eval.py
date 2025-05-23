@@ -146,7 +146,7 @@ def evaluate_ori(model, cfg, logger, device):
             else:
                 acc = out
             logger.info("Test set Accuracy: {}".format(acc))
-            # logger.info("Test set MCE: {}".format(mce))
+            logger.info("Test set MCE: {}".format(mce))
 
         elif 'pacs' in cfg.CORRUPTION.DATASET:
             pass
