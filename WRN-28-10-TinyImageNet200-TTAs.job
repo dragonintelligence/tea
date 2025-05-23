@@ -22,4 +22,3 @@ srun python main.py --cfg cfgs/tin200/pl.yaml
 srun python main.py --cfg cfgs/tin200/sar.yaml
 srun python main.py --cfg cfgs/tin200/shot.yaml
 srun python main.py --cfg cfgs/tin200/tent.yaml
-
