@@ -150,6 +150,8 @@ _C.EBM.STEPS = 20
 
 _C.EBM.UNCOND = "uncond"
 
+_C.MODEL.FILTERING = False
+
 # ------------------------------- EATA options --------------------------- #
 
 _C.EATA = CfgNode()
