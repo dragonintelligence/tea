@@ -1,6 +1,7 @@
 SAVE_DIR: ./save/cifar10/resnte50
 MODEL:
   ADAPTATION: energy
+  FILTERING: True
   ARCH: RESNET50_BN
   ADA_PARAM:
     - bn
@@ -39,7 +40,7 @@ CORRUPTION:
     - pixelate
     - jpeg_compression
 OPTIM:
-  BATCH_SIZE: 200
+  BATCH_SIZE: 600
   METHOD: Adam
   STEPS: 1
   BETA: 0.9
