@@ -6,7 +6,6 @@ from core.data import load_dataloader
 from core.optim import setup_optimizer
 from core.param import configure_model, collect_params
 import core.adazoo.energy as energy
-import core.adazoo.energy_filtering as energy_filtering
 import core.adazoo.tent as tent
 import core.adazoo.norm as norm
 import core.adazoo.eata as eata

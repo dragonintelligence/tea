@@ -182,105 +182,22 @@ def forward_and_adapt(x, energy_model, optimizer, replay_buffer, sgld_steps, sgl
     out_fake = energy_model(x_fake) # sample
     energy_fake = out_fake[0] #.mean()
 
-    # adapt ############
-    # e_margin = math.log(1000)/2-1
-    # entropys_fake = softmax_entropy(energy_fake_[1])
-    # entropys_real = softmax_entropy(out_real[1])
-    # coeff_fake = 1 / (torch.exp(entropys_fake.clone().detach() - e_margin))
-    # coeff_real = 1 / (torch.exp(entropys_real.clone().detach() - e_margin))
-    # # filter unreliable samples
-    # # filter_ids_1 = torch.where(entropys < e_margin)
-    # # ids1 = filter_ids_1
-    # # ids2 = torch.where(ids1[0]>-0.1)
-    # # entropys = entropys[filter_ids_1] 
-    # # coeff = 1 / (torch.exp(entropys.clone().detach() - e_margin))
-    # # entropys = entropys.mul(coeff)
-    
-    # # remove redundant samples
-    # d_margin=0.05
-    # cosine_similarities = F.cosine_similarity(out_real[1], energy_fake_[1], dim=1)
-    # filter_ids_2 = torch.where(torch.abs(cosine_similarities) < d_margin)
-    # entropys = entropys[filter_ids_2]
-    # #############################
-    # # energy_real = out_real[0][filter_ids_1] #.mean()
-    # # energy_fake = energy_fake_[0][filter_ids_1] #.mean()
-    # # diff = (energy_real - energy_fake).mul(coeff).mean()
-    # diff = (energy_real*coeff_real).mean() - (energy_fake*coeff_fake).mean()
-    
-    
-    ######
-    # e_margin = math.log(1000)/2-1
-    # entropys_fake = softmax_entropy(out_fake[1])
-    # entropys_real = softmax_entropy(out_real[1])
-    # coeff = entropys_fake / (entropys_real + 1e-8)
-    # filter_ids_1 = torch.where(entropys_fake < e_margin)
-
-    # cosine_similarities = F.cosine_similarity(entropys_real, entropys_fake, dim=1)
-
-    # coeff = coeff_real / coeff_fake
-    # filter unreliable samples
-    # filter_ids_1 = torch.where(entropys < e_margin)
-    # ids1 = filter_ids_1
-    # ids2 = torch.where(ids1[0]>-0.1)
-    # entropys = entropys[filter_ids_1] 
-    # coeff = 1 / (torch.exp(entropys.clone().detach() - e_margin))
-    # entropys = entropys.mul(coeff)
-    
-    # remove redundant samples
-    # d_margin=0.05
-    # cosine_similarities = F.cosine_similarity(out_real[1].softmax(1), out_fake[1].softmax(1), dim=1)
-    # filter_ids_2 = torch.where(torch.abs(cosine_similarities) < d_margin)
-    # # energy_real = energy_real[filter_ids_1]
-    # # energy_real = energy_real[filter_ids_2].mean()
-    # # energy_fake = energy_fake[filter_ids_1]
-    # # energy_fake = energy_fake[filter_ids_2].mean()
-
-
-    # entropys = entropys[filter_ids_2]
-    # diff = energy_real[filter_ids_1].mean() - energy_fake[filter_ids_1].mean()
-    # entropys_fake = entropys_fake[filter_ids_2]
-    # entropys_real = entropys_real[filter_ids_2]
-    #############################
-    # energy_real = out_real[0][filter_ids_1] #.mean()
-    # energy_fake = energy_fake_[0][filter_ids_1] #.mean()
-    # diff = (energy_real - energy_fake).mul(coeff).mean()
-    #diff = (energy_real*torch.abs(coeff_real)).mean() - (energy_fake*torch.abs(coeff_fake)).mean()
-    ###################
-    # adapt
-    # loss = (- (diff))
-
-    # d_margin=0.05
-    # entropys_fake = softmax_entropy(out_fake[1])
-    # entropys_real = softmax_entropy(out_real[1])
-    # coeff_fake = 1 / (torch.exp(entropys_fake.clone().detach() - e_margin))
-    # coeff_real = 1 / (torch.exp(entropys_real.clone().detach() - e_margin))
-    # coeff = coeff_fake / coeff_real
-    
-    # cosine_similarities = F.cosine_similarity(out_real[1].softmax(1), out_fake[1].softmax(1), dim=1)
-    # filter_ids_2 = torch.where(torch.abs(cosine_similarities) < d_margin)
-
-    # entropys_fake = entropys_fake.mul(coeff_fake)
-    # entropys_real = entropys_real.mul(coeff_real)
-    
-    # entropys_fake = entropys_fake[filter_ids_2]
-    # entropys_real = entropys_real[filter_ids_2]
-
     energy_fake = (energy_fake).mean()
     energy_real = (energy_real).mean()
     loss = (- (energy_real - energy_fake))
+    # print(filtering)
     if filtering:
-        d_margin=0.05
+        # d_margin=0.05
         e_margin = math.log(1000)/2-1
         entropys_fake = softmax_entropy(out_fake[1])
         coeff_fake = 1 / (torch.exp(entropys_fake.clone().detach() - e_margin))
-        cosine_similarities = F.cosine_similarity(out_real[1].softmax(1), out_fake[1].softmax(1), dim=1)
-        filter_ids_2 = torch.where(torch.abs(cosine_similarities) < d_margin)
+        # cosine_similarities = F.cosine_similarity(out_real[1].softmax(1), out_fake[1].softmax(1), dim=1)
+        # filter_ids_2 = torch.where(torch.abs(cosine_similarities) < d_margin)
         entropys_fake = entropys_fake.mul(coeff_fake)
-        entropys_fake = entropys_fake[filter_ids_2]
-
+        # entropys_fake = entropys_fake[filter_ids_2]
+        print("entropys_fake", entropys_fake.mean())
         loss += entropys_fake.mean()
 
-    # - entropys_real.mean() #+ entropys_fake.mean(0)+entropys_real.mean(0)
     loss.backward()
     optimizer.step()
     optimizer.zero_grad()

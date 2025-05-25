@@ -40,7 +40,7 @@ CORRUPTION:
     - pixelate
     - jpeg_compression
 OPTIM:
-  BATCH_SIZE: 600
+  BATCH_SIZE: 200
   METHOD: Adam
   STEPS: 1
   BETA: 0.9

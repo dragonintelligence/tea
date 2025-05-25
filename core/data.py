@@ -129,7 +129,7 @@ def load_pacs(data_dir=None, shuffle=False, corruptions=None, transform=None):
 
 def load_data(data, n_examples=None, severity=None, data_dir=None, shuffle=False, corruptions=None):
         data_dir = os.path.join(".", "data")
-        shuffle = True
+        shuffle = False
         if data == 'cifar10':
             _, transform = set_transform(data)
             # x_test, y_test = load_cifar10(n_examples, data_dir=data_dir)
