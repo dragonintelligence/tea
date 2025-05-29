@@ -252,8 +252,8 @@ def evaluate_ood(model, cfg, logger, device):
 
             # Print mean corruption error (mCE) averaged across all severity levels (1-5)
             if mean_corruption_errors:
-                mce_1_to_4 = sum(mean_corruption_errors[0:4]) / len(mean_corruption_errors[0:4])
-                logger.info(f"Mean Corruption Error (mCE) averaged over severities 1-4: {mce_1_to_4:.2f}")
+                mce_2_to_5 = sum(mean_corruption_errors[-4:]) / len(mean_corruption_errors[-4:])
+                logger.info(f"Mean Corruption Error (mCE) averaged over severities 2-5: {mce_2_to_5:.2f}")
 
                 mce_all = sum(mean_corruption_errors) / len(mean_corruption_errors)
                 logger.info(f"Mean Corruption Error (mCE) averaged over all severities: {mce_all:.2f}")
