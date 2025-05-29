@@ -10,6 +10,114 @@ from torchmetrics.functional import calibration_error
 
 from core.data import load_data, load_dataloader
 
+err_source = {
+    'gaussian_noise': {
+        5: 0.7232,
+        4: 0.6738,
+        3: 0.6081,
+        2: 0.4213,
+        1: 0.2218,
+    },
+    'shot_noise': {
+        5: 0.6575,
+        4: 0.5468,
+        3: 0.4651,
+        2: 0.2425,
+        1: 0.1495,
+    },
+    'impulse_noise': {
+        5: 0.7293,
+        4: 0.599,
+        3: 0.4263,
+        2: 0.3095,
+        1: 0.1714,
+    },
+    'defocus_blur': {
+        5: 0.4699,
+        4: 0.2256,
+        3: 0.1102,
+        2: 0.066,
+        1: 0.0543,
+    },
+    'glass_blur': {
+        5: 0.5433,
+        4: 0.568,
+        3: 0.4303,
+        2: 0.4424,
+        1: 0.4655,
+    },
+    'motion_blur': {
+        5: 0.3476,
+        4: 0.2521,
+        3: 0.2559,
+        2: 0.1617,
+        1: 0.0972,
+    },
+    'zoom_blur': {
+        5: 0.4201,
+        4: 0.2973,
+        3: 0.2255,
+        2: 0.1544,
+        1: 0.1229,
+    },
+    'snow': {
+        5: 0.2513,
+        4: 0.1951,
+        3: 0.1636,
+        2: 0.1958,
+        1: 0.1006,
+    },
+    'frost': {
+        5: 0.4132,
+        4: 0.2912,
+        3: 0.2741,
+        2: 0.165,
+        1: 0.1048,
+    },
+    'fog': {
+        5: 0.2602,
+        4: 0.104,
+        3: 0.0771,
+        2: 0.0645,
+        1: 0.0548,
+    },
+    'brightness': {
+        5: 0.093,
+        4: 0.0718,
+        3: 0.062,
+        2: 0.0561,
+        1: 0.0527,
+    },
+    'contrast': {
+        5: 0.4663,
+        4: 0.1641,
+        3: 0.1034,
+        2: 0.0786,
+        1: 0.0574,
+    },
+    'elastic_transform': {
+        5: 0.2662,
+        4: 0.2104,
+        3: 0.1416,
+        2: 0.098,
+        1: 0.095,
+    },
+    'pixelate': {
+        5: 0.5844,
+        4: 0.3965,
+        3: 0.2002,
+        2: 0.1397,
+        1: 0.0803,
+    },
+    'jpeg_compression': {
+        5: 0.3029,
+        4: 0.2586,
+        3: 0.2201,
+        2: 0.2033,
+        1: 0.1363,
+    },
+}
+
 def clean_accuracy(model, x, y, batch_size = 100, logger=None, device = None, ada=None, if_adapt=True, if_vis=False):
     if device is None:
         device = x.device
@@ -66,8 +174,13 @@ def evaluate_ood(model, cfg, logger, device):
     if (cfg.CORRUPTION.DATASET == 'cifar10') or (cfg.CORRUPTION.DATASET == 'cifar100') or (cfg.CORRUPTION.DATASET == 'tin200'):
         res = np.zeros((len(cfg.CORRUPTION.SEVERITY),len(cfg.CORRUPTION.TYPE)))
         res_mce = np.zeros((len(cfg.CORRUPTION.SEVERITY),len(cfg.CORRUPTION.TYPE)))
-        for c in range(len(cfg.CORRUPTION.TYPE)):
-            for s in range(len(cfg.CORRUPTION.SEVERITY)):
+        res_mean_corruption_error = 0.0
+        err_model  = {}
+
+        for c, corruption_type in enumerate(cfg.CORRUPTION.TYPE):
+            err_model[corruption_type] = {}
+
+            for s, severity in enumerate(cfg.CORRUPTION.SEVERITY):
                 try:
                     model.reset()
                     logger.info("resetting model")
@@ -83,6 +196,15 @@ def evaluate_ood(model, cfg, logger, device):
                 logger.info(f"mce % [{cfg.CORRUPTION.TYPE[c]}{cfg.CORRUPTION.SEVERITY[s]}]: {mce:.2%}")
                 res_mce[s, c] = mce
 
+                error = 1.0 - acc
+                err_model[corruption_type][severity] = round(error, 6)
+
+                if cfg.MODEL.ADAPTATION == 'source':
+                    if corruption_type not in err_source:
+                        err_source[corruption_type] = {}
+                    err_source[corruption_type][severity] = round(error, 6)
+
+
         frame = pd.DataFrame({i+1: res[i, :] for i in range(0, len(cfg.CORRUPTION.SEVERITY))}, index=cfg.CORRUPTION.TYPE)
         frame.loc['average'] = {i+1: np.mean(res, axis=1)[i] for i in range(0, len(cfg.CORRUPTION.SEVERITY))}
         frame['avg'] = frame[list(range(1, len(cfg.CORRUPTION.SEVERITY)+1))].mean(axis=1)
@@ -93,6 +215,50 @@ def evaluate_ood(model, cfg, logger, device):
         frame['avg'] = frame[list(range(1, len(cfg.CORRUPTION.SEVERITY)+1))].mean(axis=1)
         logger.info("\n"+str(frame))
     
+        if cfg.MODEL.ADAPTATION == 'source':
+            print("\n\n====== Err_source(Ck, s) ======")
+            print("err_source = {")
+            for corr_type, severities in err_source.items():
+                print(f"    '{corr_type}': {{")
+                for sev, err in severities.items():
+                    print(f"        {sev}: {err},")
+                print("    },")
+            print("}\n==============================\n")
+        else:
+            # Print mean corruption error (mCE) for severity levels 1 to 5 separately
+            mean_corruption_errors = []
+            for sev_level in range(1, 6):
+                ce_ck_sev = []
+                for corruption in err_model:
+                    if sev_level in err_model[corruption] and sev_level in err_source.get(corruption, {}):
+                        err_m = err_model[corruption][sev_level]
+                        err_s = err_source[corruption][sev_level]
+                        if err_s > 0:
+                            ce = (err_m / err_s) * 100
+                            ce_ck_sev.append(ce)
+                        else:
+                            logger.info(f"Err_source({corruption}, {sev_level}) is 0, skipping.")
+                    else:
+                        logger.info(f"Missing severity={sev_level} for {corruption}, skipping.")
+                
+                acc_avg_sev = res[sev_level - 1, :].mean()
+                if ce_ck_sev:
+                    mce_sev = sum(ce_ck_sev) / len(ce_ck_sev)
+                    mean_corruption_errors.append(mce_sev)
+
+                    logger.info(f"Mean Corruption Error (mCE) at severity {sev_level}: {mce_sev:.2f}, Accuracy = {acc_avg_sev:.2%}")
+                else:
+                    logger.info(f"Unable to compute mCE at severity {sev_level}.")
+
+            # Print mean corruption error (mCE) averaged across all severity levels (1-5)
+            if mean_corruption_errors:
+                mce_1_to_4 = sum(mean_corruption_errors[0:4]) / len(mean_corruption_errors[0:4])
+                logger.info(f"Mean Corruption Error (mCE) averaged over severities 1-4: {mce_1_to_4:.2f}")
+
+                mce_all = sum(mean_corruption_errors) / len(mean_corruption_errors)
+                logger.info(f"Mean Corruption Error (mCE) averaged over all severities: {mce_all:.2f}")
+            else:
+                logger.info("No valid mean corruption errors computed.")
     elif cfg.CORRUPTION.DATASET == 'mnist':
         _, _, _, test_loader = load_dataloader(root=cfg.DATA_DIR, dataset=cfg.CORRUPTION.DATASET, batch_size=cfg.OPTIM.BATCH_SIZE, if_shuffle=False, logger=logger)
         acc = clean_accuracy_loader(model, test_loader, logger=logger, device=device, ada=cfg.MODEL.ADAPTATION,  if_adapt=True, if_vis=True)
