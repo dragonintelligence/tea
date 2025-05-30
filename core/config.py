@@ -29,9 +29,16 @@ _C.MODEL.ARCH = 'Standard'
 # - source: baseline without adaptation
 # - norm: test-time normalization
 # - tent: test-time entropy minimization (ours)
-_C.MODEL.ADAPTATION = 'source'
+_C.MODEL.ADAPTATION = 'energy'
 
 _C.MODEL.ADA_PARAM= ['bn']
+
+# Temperature scaling parameters
+_C.MODEL.TEMPERATURE = 0.3
+_C.MODEL.MIN_TEMPERATURE = 0.05
+_C.MODEL.UNCERTAINTY_THRESHOLD = 0.7
+_C.MODEL.CONTRAST_BOOST = 2.0
+_C.MODEL.NOISE_BOOST = 1.5
 
 # By default tent is online, with updates persisting across batches.
 # To make adaptation episodic, and reset the model for each batch, choose True.
@@ -42,11 +49,11 @@ _C.MODEL.EPISODIC = False
 _C.CORRUPTION = CfgNode()
 
 # Dataset for evaluation
-_C.CORRUPTION.DATASET = 'cifar10'
+_C.CORRUPTION.DATASET = 'tin200'
 
 _C.CORRUPTION.NUM_CLASSES = 10
 
-_C.CORRUPTION.IMG_SIZE= 32
+_C.CORRUPTION.IMG_SIZE= 64
 
 _C.CORRUPTION.NUM_CHANNEL= 3
 
@@ -120,7 +127,7 @@ _C.RNG_SEED = 1
 _C.SAVE_DIR = "./output"
 
 # Data directory
-_C.DATA_DIR = "/home/user/datasets"
+_C.DATA_DIR = "./datasets"
 
 # Weight directory
 _C.CKPT_DIR = "./ckpt"

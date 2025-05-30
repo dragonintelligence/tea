@@ -1,9 +1,14 @@
-SAVE_DIR: ./save/tin200/bn-wrn-28-10
+SAVE_DIR: ./save/cifar10/bn-wrn-28-10
 MODEL:
-  ADAPTATION: energy
+  ADAPTATION: uncertainty
   ARCH: WRN2810_BN
   ADA_PARAM:
     - bn
+  TEMPERATURE: 0.3
+  MIN_TEMPERATURE: 0.05
+  UNCERTAINTY_THRESHOLD: 0.7
+  CONTRAST_BOOST: 2.0
+  NOISE_BOOST: 1.5
 EBM:
   UNCOND: uncond
   STEPS: 20
@@ -12,9 +17,9 @@ EBM:
   BUFFER_SIZE: 10000
   REINIT_FREQ:  0.05
 CORRUPTION:
-  DATASET: tin200
-  NUM_CLASSES: 200
-  IMG_SIZE: 64
+  DATASET: cifar10
+  NUM_CLASSES: 10
+  IMG_SIZE: 32
   NUM_CHANNEL: 3
   SEVERITY:
     - 5
@@ -39,9 +44,9 @@ CORRUPTION:
     - pixelate
     - jpeg_compression
 OPTIM:
-  BATCH_SIZE: 150
+  BATCH_SIZE: 200
   METHOD: Adam
   STEPS: 1
   BETA: 0.9
-  LR: 0.00075
+  LR: 0.001
   WD: 0.

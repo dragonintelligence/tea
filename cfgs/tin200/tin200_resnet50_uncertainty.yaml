@@ -1,9 +1,23 @@
-SAVE_DIR: ./save/tin200/bn-wrn-28-10
+SAVE_DIR: ./save/tin200/bn-resnet18
 MODEL:
-  ADAPTATION: source
-  ARCH: WRN2810_BN 
+  ADAPTATION: uncertainty
+  ARCH: resnet18_TIN
   ADA_PARAM:
     - bn
+  TEMPERATURE: 0.3
+  MIN_TEMPERATURE: 0.05
+  UNCERTAINTY_THRESHOLD: 0.7
+  CONTRAST_BOOST: 2.0
+  NOISE_BOOST: 1.5
+
+EBM:
+  UNCOND: uncond
+  STEPS: 20
+  SGLD_LR: 0.1
+  SGLD_STD: 0.01
+  BUFFER_SIZE: 10000
+  REINIT_FREQ: 0.05
+
 CORRUPTION:
   DATASET: tin200
   NUM_CLASSES: 200
@@ -31,5 +45,11 @@ CORRUPTION:
     - elastic_transform
     - pixelate
     - jpeg_compression
+
 OPTIM:
   BATCH_SIZE: 200
+  METHOD: Adam
+  STEPS: 1
+  BETA: 0.9
+  LR: 0.001
+  WD: 0.
