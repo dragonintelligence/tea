@@ -33,7 +33,10 @@ def main():
             base_model = torch.hub.load("chenyaofo/pytorch-cifar-models", "cifar100_resnet56", pretrained=True).to(device)
         elif cfg.CORRUPTION.DATASET == 'cifar100' or cfg.CORRUPTION.DATASET == 'tin200':
             base_model = build_model_wrn2810bn(cfg.CORRUPTION.NUM_CLASSES).to(device)
-            ckpt = torch.load(os.path.join(cfg.CKPT_DIR ,'{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
+            try:
+                ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
+            except:
+                ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pkl'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
             base_model.load_state_dict(ckpt['state_dict'])
         elif cfg.CORRUPTION.DATASET == 'pacs' or cfg.CORRUPTION.DATASET == 'mnist' :
             base_model = build_model_res18bn(cfg.CORRUPTION.NUM_CLASSES).to(device)
