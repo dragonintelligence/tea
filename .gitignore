@@ -21,4 +21,11 @@ save*/
 .others/
 *.out
 data/
+<<<<<<< HEAD
 datasets/
+=======
+*.out
+results/
+cifar-10-batches-py/
+cifar-10-python.tar.gz
+>>>>>>> eaa48ad526ffa5ba16b55b10cd00a237250f1236

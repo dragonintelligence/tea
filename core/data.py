@@ -133,4 +133,3 @@ def load_dataloader(root, dataset, batch_size, if_shuffle, logger=None):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size,  num_workers=4, shuffle=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size,  num_workers=4, shuffle=if_shuffle)
     return train_dataset, test_dataset, train_loader, test_loader
-

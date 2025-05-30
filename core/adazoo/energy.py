@@ -4,13 +4,20 @@ import torch
 import torch.jit
 import torch.nn as nn
 import torch.nn.functional as F
-
+import math
 from torchvision.utils import save_image
 from core.param import load_model_and_optimizer, copy_model_and_optimizer
 
 def init_random(bs, *, im_sz, n_ch):
     return torch.FloatTensor(bs, n_ch, im_sz, im_sz).uniform_(-1, 1)
 
+@torch.jit.script
+def softmax_entropy(x: torch.Tensor) -> torch.Tensor:
+    """Entropy of softmax distribution from logits."""
+    temperature = 1
+    x = x / temperature
+    x = -(x.softmax(1) * x.log_softmax(1)).sum(1)
+    return x
 
 class EnergyModel(nn.Module):
     def __init__(self, model):
@@ -86,7 +93,11 @@ class Energy(nn.Module):
     """
     def __init__(self, model, optimizer, steps=1, episodic=False, 
                  buffer_size=10000, sgld_steps=20, sgld_lr=1, sgld_std=0.01, reinit_freq=0.05, if_cond=False, 
+<<<<<<< HEAD
                  n_classes=10, im_sz=64, n_ch=3, path=None, logger=None):
+=======
+                 n_classes=10, im_sz=32, n_ch=3, path=None, logger=None, filtering=False): 
+>>>>>>> eaa48ad526ffa5ba16b55b10cd00a237250f1236
         super().__init__()
 
         self.im_sz = im_sz
@@ -99,6 +110,7 @@ class Energy(nn.Module):
         self.steps = steps
         assert steps > 0, "tent requires >= 1 step(s) to forward and update"
         self.episodic = episodic
+        self.filtering = filtering
 
         self.sgld_steps = sgld_steps
         self.sgld_lr = sgld_lr
@@ -123,7 +135,8 @@ class Energy(nn.Module):
             for i in range(self.steps):
                 outputs = forward_and_adapt(x, self.energy_model, self.optimizer, 
                                             self.replay_buffer, self.sgld_steps, self.sgld_lr, self.sgld_std, self.reinit_freq,
-                                            if_cond=self.if_cond, n_classes=self.n_classes)
+                                            if_cond=self.if_cond, n_classes=self.n_classes, filtering=self.filtering)
+                  
                 if i % 1 == 0 and if_vis:
                     visualize_images(path=self.path, replay_buffer_old=self.replay_buffer_old, replay_buffer=self.replay_buffer, energy_model=self.energy_model, 
                                     sgld_steps=self.sgld_steps, sgld_lr=self.sgld_lr, sgld_std=self.sgld_std, reinit_freq=self.reinit_freq,
@@ -162,7 +175,7 @@ def visualize_images(path, replay_buffer_old, replay_buffer, energy_model,
     save_image(images_diff , os.path.join(path, 'buffer_diff.png'), padding=2, nrow=num_cols)
 
 @torch.enable_grad()  # ensure grads in possible no grad context for testing
-def forward_and_adapt(x, energy_model, optimizer, replay_buffer, sgld_steps, sgld_lr, sgld_std, reinit_freq, if_cond=False, n_classes=10):
+def forward_and_adapt(x, energy_model, optimizer, replay_buffer, sgld_steps, sgld_lr, sgld_std, reinit_freq, if_cond=False, n_classes=10, filtering=False):
     """Forward and adapt model on batch of data.
     Measure entropy of the model prediction, take gradients, and update params.
     """
@@ -182,12 +195,27 @@ def forward_and_adapt(x, energy_model, optimizer, replay_buffer, sgld_steps, sgl
                              batch_size=batch_size, im_sz=im_sz, n_ch=n_ch, device=device, y=y)
 
     # forward
-    out_real = energy_model(x)
-    energy_real = out_real[0].mean()
-    energy_fake = energy_model(x_fake)[0].mean()
+    out_real = energy_model(x) # [200], [200, 10]
+    energy_real = out_real[0] #.mean()
+    out_fake = energy_model(x_fake) # sample
+    energy_fake = out_fake[0] #.mean()
 
-    # adapt
-    loss = (- (energy_real - energy_fake)) 
+    energy_fake = (energy_fake).mean()
+    energy_real = (energy_real).mean()
+    loss = (- (energy_real - energy_fake))
+    # print(filtering)
+    if filtering:
+        # d_margin=0.05
+        e_margin = math.log(1000)/2-1
+        entropys_fake = softmax_entropy(out_fake[1])
+        coeff_fake = 1 / (torch.exp(entropys_fake.clone().detach() - e_margin))
+        # cosine_similarities = F.cosine_similarity(out_real[1].softmax(1), out_fake[1].softmax(1), dim=1)
+        # filter_ids_2 = torch.where(torch.abs(cosine_similarities) < d_margin)
+        entropys_fake = entropys_fake.mul(coeff_fake)
+        # entropys_fake = entropys_fake[filter_ids_2]
+        print("entropys_fake", entropys_fake.mean())
+        loss += entropys_fake.mean()
+
     loss.backward()
     optimizer.step()
     optimizer.zero_grad()

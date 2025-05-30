@@ -27,6 +27,7 @@ def main():
             # use robustbench
             model = 'Standard'
             base_model = load_model(model, cfg.CKPT_DIR, cfg.CORRUPTION.DATASET, ThreatModel.corruptions).to(device)
+<<<<<<< HEAD
 
         elif cfg.CORRUPTION.DATASET == 'tin200' and cfg.MODEL.ARCH == 'resnet18_TIN':
             from core.model.custom_resnet import resnet18
@@ -59,6 +60,20 @@ def main():
             base_model.load_state_dict(ckpt['state_dict'])
 
         elif cfg.CORRUPTION.DATASET == 'pacs' or cfg.CORRUPTION.DATASET == 'mnist':
+=======
+        elif cfg.CORRUPTION.DATASET == 'cifar100' and cfg.MODEL.ARCH == 'WRN2810_BN':
+            base_model = load_model(model_name='Wang2023Better_WRN-28-10', dataset=cfg.CORRUPTION.DATASET).to(device)
+        elif cfg.CORRUPTION.DATASET == 'cifar100' and cfg.MODEL.ARCH == 'RESNET50_BN':
+            base_model = torch.hub.load("chenyaofo/pytorch-cifar-models", "cifar100_resnet56", pretrained=True).to(device)
+        elif cfg.CORRUPTION.DATASET == 'cifar100' or cfg.CORRUPTION.DATASET == 'tin200':
+            base_model = build_model_wrn2810bn(cfg.CORRUPTION.NUM_CLASSES).to(device)
+            try:
+                ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
+            except:
+                ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pkl'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
+            base_model.load_state_dict(ckpt['state_dict'])
+        elif cfg.CORRUPTION.DATASET == 'pacs' or cfg.CORRUPTION.DATASET == 'mnist' :
+>>>>>>> eaa48ad526ffa5ba16b55b10cd00a237250f1236
             base_model = build_model_res18bn(cfg.CORRUPTION.NUM_CLASSES).to(device)
             ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
             base_model.load_state_dict(ckpt['state_dict'])
@@ -113,7 +128,7 @@ def main():
     evaluate_ood(model, cfg, logger, device)
     evaluate_ori(model, cfg, logger, device)
     # evaluate_adv(base_model, model, cfg, logger, device)
-    # calibration_ori(model, cfg, logger, device)
+    calibration_ori(model, cfg, logger, device)
 
 if __name__ == '__main__':
     main()
