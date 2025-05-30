@@ -207,47 +207,16 @@ def forward_and_adapt(x, uncertainty_model, optimizer, replay_buffer, sgld_steps
 
     # forward
     out_real = uncertainty_model(x)
-    uncertainty_real = out_real[0]
-    uncertainty_real_full = out_real[2]
-    logits_real = out_real[1]
-    
     out_fake = uncertainty_model(x_fake)
-    uncertainty_fake = out_fake[0]
-    uncertainty_fake_full = out_fake[2]
-    logits_fake = out_fake[1]
 
-    # Compute energy terms
-    energy_real = -logits_real.logsumexp(1).mean()
-    energy_fake = -logits_fake.logsumexp(1).mean()
-    energy_loss = -(energy_real - energy_fake)
+    # Use the first output (energy) and take the mean, matching energy.py
+    energy_real = out_real[0].mean() if isinstance(out_real, tuple) else out_real.mean()
+    energy_fake = out_fake[0].mean() if isinstance(out_fake, tuple) else out_fake.mean()
 
-    # Compute uncertainty terms
-    mean_uncertainty_real = uncertainty_real.mean()
-    mean_uncertainty_fake = uncertainty_fake.mean()
-    var_uncertainty_real = uncertainty_real.var()
-    var_uncertainty_fake = uncertainty_fake.var()
+    # Standard energy model loss
+    loss = -(energy_real - energy_fake)
 
-    # Enhanced uncertainty handling
-    uncertainty_diff = mean_uncertainty_real - mean_uncertainty_fake
-    uncertainty_factor = torch.sigmoid(uncertainty_real_full.mean() - uncertainty_model.uncertainty_threshold)
-    variance_weight = 0.1 * (1 + torch.sigmoid(uncertainty_diff)) * (1 + 2 * uncertainty_factor)
-    contrast_aware_term = torch.mean(torch.abs(uncertainty_real_full - uncertainty_fake_full)) * uncertainty_model.contrast_boost
-    noise_aware_term = torch.mean(torch.abs(uncertainty_real - uncertainty_fake)) * uncertainty_model.noise_boost
-
-    # Combine both losses
-    uncertainty_loss = (- (mean_uncertainty_real - mean_uncertainty_fake) + 
-                       variance_weight * (var_uncertainty_real + var_uncertainty_fake) +
-                       contrast_aware_term +
-                       noise_aware_term)
-
-    # Combine both losses with a weighting factor
-    energy_weight = 0.5
-    uncertainty_weight = 0.5
-    loss = energy_weight * energy_loss + uncertainty_weight * uncertainty_loss
-    
     loss.backward()
     optimizer.step()
     optimizer.zero_grad()
-    outputs = uncertainty_model.classify(x)
-
-    return outputs
+    return out_real
