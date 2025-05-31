@@ -82,3 +82,20 @@ sbatch run_uncertainty.job
 - Add new adaptation methods in `core/adazoo/`.
 - Register new models in `core/model/`.
 - Add new configs in `cfgs/`.
+
+## Notes for Entropy-based Energy Adaptation
+
+- **Important:** To enable entropy-based energy adaptation, you must set `filtering: true` in your energy adaptation config (e.g., in `cfgs/tin200/energy.yaml`).
+
+## Adaptive Calibration Parameters
+
+The following parameters control the behavior of adaptive uncertainty and calibration:
+
+- **temperature**: Base temperature for softmax scaling. Higher values produce softer probability distributions.
+- **min_temperature**: The minimum allowed temperature during annealing or adaptation.
+- **scaling_factor**: Multiplies the normalized entropy to adapt the temperature per input. Higher values make the temperature more sensitive to uncertainty.
+- **uncertainty_threshold**: Threshold for considering a prediction as uncertain. Can be used for filtering or special handling of high-uncertainty samples.
+- **contrast_boost**: (If used) Controls the strength of contrastive adaptation in the uncertainty model.
+- **noise_boost**: (If used) Controls the amount of noise injected during adaptation for robustness.
+
+Tune these parameters in your config files (e.g., `cfgs/tin200/uncertainty.yaml`) to optimize calibration and adaptation for your dataset and model.
