@@ -27,8 +27,8 @@ def main():
             # use robustbench
             model = 'Standard'
             base_model = load_model(model, cfg.CKPT_DIR, cfg.CORRUPTION.DATASET, ThreatModel.corruptions).to(device)
-<<<<<<< HEAD
-
+        elif cfg.CORRUPTION.DATASET == 'cifar100' and cfg.MODEL.ARCH == 'WRN2810_BN':
+            base_model = load_model(model_name='Wang2023Better_WRN-28-10', dataset=cfg.CORRUPTION.DATASET).to(device)
         elif cfg.CORRUPTION.DATASET == 'tin200' and cfg.MODEL.ARCH == 'resnet18_TIN':
             from core.model.custom_resnet import resnet18
             import torch.nn as nn
@@ -50,30 +50,20 @@ def main():
                 new_state_dict[new_key] = v
 
             base_model.load_state_dict(new_state_dict)
-
+        elif cfg.CORRUPTION.DATASET == 'cifar100' and cfg.MODEL.ARCH == 'RESNET50_BN':
+            base_model = torch.hub.load("chenyaofo/pytorch-cifar-models", "cifar100_resnet56", pretrained=True).to(device)
         elif cfg.CORRUPTION.DATASET == 'cifar100' or cfg.CORRUPTION.DATASET == 'tin200':
             base_model = build_model_wrn2810bn(cfg.CORRUPTION.NUM_CLASSES)
             if base_model is None:
                 raise RuntimeError("build_model_wrn2810bn returned None — check model registration.")
             base_model = base_model.to(device)
-            ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
-            base_model.load_state_dict(ckpt['state_dict'])
-
-        elif cfg.CORRUPTION.DATASET == 'pacs' or cfg.CORRUPTION.DATASET == 'mnist':
-=======
-        elif cfg.CORRUPTION.DATASET == 'cifar100' and cfg.MODEL.ARCH == 'WRN2810_BN':
-            base_model = load_model(model_name='Wang2023Better_WRN-28-10', dataset=cfg.CORRUPTION.DATASET).to(device)
-        elif cfg.CORRUPTION.DATASET == 'cifar100' and cfg.MODEL.ARCH == 'RESNET50_BN':
-            base_model = torch.hub.load("chenyaofo/pytorch-cifar-models", "cifar100_resnet56", pretrained=True).to(device)
-        elif cfg.CORRUPTION.DATASET == 'cifar100' or cfg.CORRUPTION.DATASET == 'tin200':
-            base_model = build_model_wrn2810bn(cfg.CORRUPTION.NUM_CLASSES).to(device)
             try:
                 ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
             except:
                 ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pkl'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
             base_model.load_state_dict(ckpt['state_dict'])
+
         elif cfg.CORRUPTION.DATASET == 'pacs' or cfg.CORRUPTION.DATASET == 'mnist' :
->>>>>>> eaa48ad526ffa5ba16b55b10cd00a237250f1236
             base_model = build_model_res18bn(cfg.CORRUPTION.NUM_CLASSES).to(device)
             ckpt = torch.load(os.path.join(cfg.CKPT_DIR, '{}/{}.pth'.format(cfg.CORRUPTION.DATASET, cfg.MODEL.ARCH)))
             base_model.load_state_dict(ckpt['state_dict'])
