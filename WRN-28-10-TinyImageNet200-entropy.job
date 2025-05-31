@@ -2,11 +2,11 @@
 
 #SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
-#SBATCH --job-name=WRNTINEnergy
+#SBATCH --job-name=WRNTIN-ENTTEA
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=5
 #SBATCH --time=12:00:00
-#SBATCH --output=WRNTINEnergy_%A.out
+#SBATCH --output=WRNTIN-ENTTEA_%A.out
 
 module purge
 module load 2024
@@ -15,4 +15,4 @@ module load Anaconda3/2024.06-1
 #conda env create -f environment.yml
 conda init
 conda activate tea
-srun python main.py --cfg cfgs/tin200/energy.yaml
+srun python main.py --cfg cfgs/tin200/ent-tea.yaml
