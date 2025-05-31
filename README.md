@@ -1,54 +1,84 @@
+# Adaptive Uncertainty and Entropy Extensions for Test-Time Energy Adaptation
 
-# TEA: Test-time Energy Adaptation
+This repository extends the original TEA (Test-time Energy Adaptation) framework with:
+- **Uncertainty-Adaptive Temperature Scaling:** Dynamically adjusts the softmax temperature based on model uncertainty (entropy), improving calibration and robustness.
+- **Entropy-Aware Energy Adaptation:** Integrates entropy-based uncertainty into the energy adaptation process.
 
-> Yige Yuan, Bingbing Xu, Liang Hou, Fei Sun, Huawei Shen, Xueqi Cheng
-> 
-> The IEEE / CVF Computer Vision and Pattern Recognition Conference (CVPR), 2024
+## Features
 
-This is an official PyTorch implementation of paper [TEA: Test-time Energy Adaptation](https://arxiv.org/abs/2311.14402).
+- **Adaptive Uncertainty Model:**  
+  Implements temperature scaling that adapts per input based on normalized predictive entropy.
+- **Energy-based Adaptation with Entropy:**  
+  Extends energy adaptation to leverage entropy for more robust test-time adaptation.
+- **Support for Standard and Corrupted Datasets:**  
+  Works with CIFAR-10, CIFAR-100, Tiny-ImageNet, and their corrupted variants.
 
-![Our Proposed TEA](./pic/tea.jpg)
+## Installation
 
-### Main Usage
+1. Clone the repository:
+   ```bash
+   git clone <your-repo-url>
+   cd tea
+   ```
 
-```python
-CUDA_VISIBLE_DEVICES=0 python main.py --cfg cfgs/cifar10/energy.yaml
+2. Create the conda environment:
+   ```bash
+   conda env create -f tea_env.yml
+   conda activate tea
+   ```
+
+3. (Optional) Install additional requirements:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## Dataset Preparation
+
+- Place datasets in the `datasets/` directory.
+- For Tiny-ImageNet-C, the structure should be:
+  ```
+  datasets/
+    Tiny-ImageNet-C/
+      gaussian_noise/
+      brightness/
+      ...
+  ```
+- For pretrained models, place checkpoints in `ckpt/` (e.g., `ckpt/tin200/resnet18_TIN.pkl`).
+
+## Usage
+
+### Run Adaptive Uncertainty Model
+
+```bash
+python main.py --cfg cfgs/tin200/uncertainty.yaml
 ```
-The default model using trained WRN-28-10 from [RobustBench](https://github.com/RobustBench/robustbench).
 
-*core/config.py* defines all default settings, you can specify particular settings in *cfgs/xx.yaml*
+### Run Energy Adaptation with Entropy
 
-### Baseline Support
-
-Our code supports running other baselines with a one-line script, the supported baselines include:
-- **Source:** model without any adaptation
-- **PL:** Pseudo-Label-The Simple and Efficient Semi-Supervised Learning Method for Deep Neural Networks (ICMLW 2013)
-- **SHOT:** Do We Really Need to Access the Source Data? Source Hypothesis Transfer for Unsupervised Domain Adaptation (ICML 2020)
-- **BN**: Improving robustness against common corruptions by covariate shift adaptation (NeurIPS 2020)
-- **TENT:** Tent: Fully Test-Time Adaptation by Entropy Minimization (ICLR 2021)
-- **ETA:** Efficient Test-Time Model Adaptation without Forgetting (ICML 2022)
-- **EATA:** Efficient Test-Time Model Adaptation without Forgetting (ICML 2022)
-- **SAR:** Towards Stable Test-time Adaptation in Dynamic Wild World (ICLR 2023)
-
-```python
-# Baselines
-CUDA_VISIBLE_DEVICES=0 python main.py --cfg cfgs/cifar10/source.yaml
-CUDA_VISIBLE_DEVICES=0 python main.py --cfg cfgs/cifar10/norm.yaml
-CUDA_VISIBLE_DEVICES=0 python main.py --cfg cfgs/cifar10/tent.yaml
-CUDA_VISIBLE_DEVICES=0 python main.py --cfg cfgs/cifar10/eta.yaml
-CUDA_VISIBLE_DEVICES=0 python main.py --cfg cfgs/cifar10/eata.yaml
-CUDA_VISIBLE_DEVICES=0 python main.py --cfg cfgs/cifar10/sar.yaml
-CUDA_VISIBLE_DEVICES=0 python main.py --cfg cfgs/cifar10/pl.yaml
-CUDA_VISIBLE_DEVICES=0 python main.py --cfg cfgs/cifar10/shot.yaml
+```bash
+python main.py --cfg cfgs/tin200/energy.yaml
 ```
 
-### Reference
-If you find our work useful, please consider citing our paper:
+### Example SLURM Job Script
+
+```bash
+sbatch run_uncertainty.job
 ```
-@article{yuan2023tea,
-  title={TEA: Test-time Energy Adaptation},
-  author={Yuan, Yige and Xu, Bingbing and Hou, Liang and Sun, Fei and Shen, Huawei and Cheng, Xueqi},
-  journal={arXiv preprint arXiv:2311.14402},
-  year={2023}
-}
-```
+
+## Configuration
+
+- All settings can be controlled via YAML config files in `cfgs/`.
+- Example: `cfgs/tin200/uncertainty.yaml` for Tiny-ImageNet with uncertainty adaptation.
+
+## Main Modules
+
+- `core/adazoo/uncertainty.py`: Implements the UncertaintyModel and adaptive temperature scaling.
+- `core/adazoo/energy.py`: Implements energy-based adaptation, extended for entropy.
+- `core/data.py`: Data loading and preprocessing.
+- `core/model/`: Model architectures (ResNet, WideResNet, etc.).
+
+## Extending the Framework
+
+- Add new adaptation methods in `core/adazoo/`.
+- Register new models in `core/model/`.
+- Add new configs in `cfgs/`.
